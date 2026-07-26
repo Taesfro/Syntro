@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syntro — Don't Give Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Sora:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0b0f;
+    --surface:#14161d;
+    --surface-2:#1c1f29;
+    --ink:#ece9e2;
+    --ink-muted:#8d8b98;
+    --ink-faint:#55535f;
+    --hairline:rgba(236,233,226,0.09);
+    --home-accent:#6b5271;
+    --scene-bg1:#1a1015;
+    --scene-bg2:#0b0d12;
+    --scene-accent:#a64b4b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  .site-logo{
+    position:fixed; top:1.4rem; left:1.6rem; z-index:50;
+    font-size:0.72rem; letter-spacing:0.25em; text-transform:uppercase;
+    color:var(--ink-faint); pointer-events:none;
+  }
+  html,body{height:100%;}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:'Sora',sans-serif;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Fraunces',serif;}
+  ::selection{background:var(--home-accent); color:#fff;}
+
+  /* ---------- layout scaffold ---------- */
+  #app{position:relative; width:100%; min-height:100vh;}
+  .screen{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:6vh 6vw;
+    opacity:0; visibility:hidden;
+    transition:opacity 0.7s ease;
+  }
+  .screen.active{opacity:1; visibility:visible; position:relative;}
+
+  /* ---------- HOME ---------- */
+  #screen-home{min-height:100vh; text-align:center;}
+  .orb-wrap{
+    position:absolute; top:50%; left:50%;
+    width:min(70vw,640px); height:min(70vw,640px);
+    transform:translate(-50%,-50%);
+    z-index:0; pointer-events:none;
+  }
+  .orb{
+    width:100%; height:100%; border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, var(--home-accent) 0%, transparent 68%);
+    filter:blur(38px);
+    opacity:0.55;
+    animation:breathe 7s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(0.92); opacity:0.4;}
+    50%{transform:scale(1.08); opacity:0.65;}
+  }
+  .eyebrow{
+    font-size:0.72rem; letter-spacing:0.3em; text-transform:uppercase;
+    color:var(--ink-muted); margin-bottom:1.4rem; z-index:1; position:relative;
+  }
+  .home-title{
+    font-size:clamp(3rem, 11vw, 6.8rem);
+    font-weight:600; letter-spacing:-0.02em; line-height:0.98;
+    z-index:1; position:relative;
+    background:linear-gradient(180deg, #fdfbf7 0%, #c9c6d6 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .home-sub{
+    max-width:520px; margin:1.6rem auto 0; color:var(--ink-muted);
+    font-size:1rem; line-height:1.6; z-index:1; position:relative;
+  }
+  .home-sub b{color:var(--ink); font-weight:500;}
+
+  .input-row{
+    z-index:1; position:relative; margin-top:3rem;
+    width:100%; max-width:620px;
+  }
+  .input-line{
+    display:flex; align-items:center; gap:0.7rem;
+    border-bottom:1px solid var(--ink-faint);
+    padding:0.9rem 0.2rem;
+    transition:border-color 0.3s;
+  }
+  .input-line:focus-within{border-color:var(--home-accent);}
+  .prompt-mark{color:var(--home-accent); font-size:1.1rem;}
+  #problem-input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--ink); font-family:'Sora',sans-serif; font-size:1.05rem;
+  }
+  #problem-input::placeholder{color:var(--ink-faint);}
+  .input-hint{
+    margin-top:0.7rem; font-size:0.72rem; color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+
+  .chip-field{
+    z-index:1; position:relative;
+    margin-top:3.2rem; max-width:680px;
+    display:flex; flex-wrap:wrap; gap:0.55rem 0.7rem;
+    justify-content:center;
+  }
+  .chip-label{
+    width:100%; text-align:center; font-size:0.72rem;
+    letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:0.6rem;
+  }
+  .chip{
+    font-family:'IBM Plex Mono',monospace; font-size:0.78rem;
+    color:var(--ink-muted); background:var(--surface);
+    border:1px solid var(--hairline); border-radius:100px;
+    padding:0.4rem 0.9rem; cursor:pointer;
+    transition:all 0.25s ease;
+  }
+  .chip:hover{
+    color:var(--ink); border-color:var(--home-accent);
+    background:var(--surface-2);
+    transform:translateY(-2px);
+  }
+
+  /* ---------- LOADING ---------- */
+  #screen-loading{min-height:100vh; text-align:center;}
+  .load-orb{width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, var(--home-accent), transparent 70%);
+    filter:blur(20px); animation:breathe 1.8s ease-in-out infinite; margin-bottom:2rem;}
+  .load-text{color:var(--ink-muted); font-size:0.95rem; letter-spacing:0.05em;}
+  .load-detail{
+    color:var(--ink-faint); font-size:0.72rem; letter-spacing:0.03em;
+    margin-top:0.8rem; max-width:520px; word-break:break-word;
+  }
+  .load-error{max-width:480px;}
+  .btn{
+    font-family:'IBM Plex Mono',monospace; font-size:0.78rem;
+    letter-spacing:0.12em; text-transform:uppercase;
+    background:transparent; color:var(--ink);
+    border:1px solid var(--ink-faint); border-radius:100px;
+    padding:0.75rem 1.6rem; cursor:pointer; transition:all 0.25s;
+    margin-top:1.6rem;
+  }
+  .btn:hover{border-color:var(--ink); background:var(--surface-2);}
+
+  /* ---------- GAME ---------- */
+  #screen-game{min-height:100vh; padding:0; justify-content:flex-start;}
+
+  .scene{
+    width:100%; flex:1; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:4vh 6vw 6vh;
+    min-height:100vh;
+    background:radial-gradient(ellipse 120% 80% at 50% 20%, var(--scene-bg1), var(--scene-bg2));
+    transition:background 1.4s ease;
+  }
+  .scene svg.scene-art{position:absolute; inset:0; width:100%; height:100%; z-index:0; opacity:0.55;}
+  .particle{
+    position:absolute; border-radius:50%; background:var(--scene-accent);
+    opacity:0.35; z-index:1; filter:blur(0.5px);
+  }
+  @keyframes rise{ from{transform:translateY(0); opacity:0;} 10%{opacity:0.5;} to{transform:translateY(-60vh); opacity:0;} }
+  @keyframes fall{ from{transform:translateY(-10vh); opacity:0;} 10%{opacity:0.4;} to{transform:translateY(60vh); opacity:0;} }
+  @keyframes drift{ from{transform:translateX(-10vw) translateY(0); opacity:0;} 15%{opacity:0.4;} to{transform:translateX(10vw) translateY(-15vh); opacity:0;} }
+
+  .stage-card{
+    position:relative; z-index:2; max-width:640px; width:100%;
+    text-align:center;
+  }
+  .stage-label{
+    font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase;
+    color:var(--scene-accent); margin-bottom:1.1rem;
+  }
+  .narration{
+    font-family:'Fraunces',serif; font-weight:400; font-size:clamp(1.3rem,2.6vw,1.7rem);
+    line-height:1.5; color:var(--ink);
+  }
+  .pixel-frame{
+    position:relative; width:100%; max-width:420px; margin:2rem auto 0;
+    aspect-ratio:3/2; background:#000;
+    border:3px solid var(--scene-accent);
+    box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 18px 40px rgba(0,0,0,0.55);
+    overflow:hidden;
+  }
+  .pixel-canvas{
+    width:100%; height:100%; display:block;
+    image-rendering:pixelated; image-rendering:-moz-crisp-edges; image-rendering:crisp-edges;
+  }
+  .vn-dialogue{
+    position:absolute; left:0; right:0; bottom:0;
+    background:rgba(8,8,12,0.86);
+    border-top:2px solid var(--scene-accent);
+    padding:0.8rem 1rem; text-align:left;
+  }
+  .vn-dialogue .speaker{
+    font-family:'IBM Plex Mono',monospace; font-size:0.62rem;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:0.3rem;
+  }
+  .vn-dialogue .line{
+    font-family:'Fraunces',serif; font-style:italic; font-size:0.92rem; color:var(--ink); line-height:1.4;
+  }
+  .stage-actions{margin-top:2.6rem; position:relative; z-index:2;}
+  .btn-primary{
+    border-color:var(--scene-accent); color:var(--ink);
+  }
+  .btn-primary:hover{background:var(--scene-accent); border-color:var(--scene-accent); color:#0a0b0f;}
+
+  /* ---------- SUMMARY ---------- */
+  #screen-summary{min-height:100vh; text-align:left; align-items:center;}
+  .summary-wrap{max-width:680px; width:100%; position:relative; z-index:2;}
+  .summary-title{font-family:'Fraunces',serif; font-size:clamp(1.8rem,4vw,2.6rem); text-align:center; margin-bottom:0.6rem;}
+  .summary-sub{text-align:center; color:var(--ink-muted); font-size:0.9rem; margin-bottom:3rem;}
+  .summary-section{margin-bottom:2.4rem;}
+  .summary-heading{
+    font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--scene-accent); margin-bottom:1rem;
+  }
+  .activity-list{list-style:none;}
+  .activity-list li{
+    display:flex; gap:0.9rem; padding:0.7rem 0; border-bottom:1px solid var(--hairline);
+    font-size:0.98rem; line-height:1.5;
+  }
+  .activity-list li .num{
+    font-family:'IBM Plex Mono',monospace; color:var(--ink-faint); font-size:0.85rem; flex-shrink:0;
+  }
+  .rec-cols{display:flex; gap:2.5rem; flex-wrap:wrap;}
+  .rec-col{flex:1; min-width:200px;}
+  .rec-col ul{list-style:none;}
+  .rec-col li{font-size:0.92rem; padding:0.4rem 0; color:var(--ink-muted); line-height:1.5;}
+  .rec-col li b{color:var(--ink); font-weight:500;}
+  .quote-block{
+    margin:3rem 0 2.5rem; text-align:center; padding:2rem 1rem;
+    border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline);
+  }
+  .quote-block p{
+    font-family:'Fraunces',serif; font-style:italic; font-size:clamp(1.2rem,2.8vw,1.6rem);
+    line-height:1.5; color:var(--ink);
+  }
+  .summary-actions{text-align:center;}
+
+  @media (prefers-reduced-motion: reduce){
+    .orb, .load-orb, .particle{animation:none !important;}
+    .screen{transition:none;}
+  }
+  @media (max-width:600px){
+    .rec-cols{flex-direction:column; gap:1.2rem;}
+  }
+</style>
+</head>
+<body>
+<div class="site-logo mono">Syntro</div>
+<div id="app">
+
+  <!-- HOME -->
+  <section class="screen active" id="screen-home">
+    <div class="orb-wrap"><div class="orb"></div></div>
+    <div class="eyebrow mono">um jogo syntro</div>
+    <h1 class="home-title display">Don't<br>Give Up</h1>
+    <p class="home-sub">Um jogo curto que transforma o que você está sentindo em uma jornada — com início, queda e um jeito de sair dela. <b>Escreva o que dói</b> e aperte Enter.</p>
+
+    <div class="input-row">
+      <div class="input-line">
+        <span class="prompt-mark mono">›</span>
+        <input type="text" id="problem-input" class="mono" placeholder="o que você está sentindo hoje?" autocomplete="off">
+      </div>
+      <div class="input-hint mono">pressione ENTER para começar sua jornada</div>
+    </div>
+
+    <div class="chip-field" id="chip-field">
+      <div class="chip-label mono">sem ideia do que digitar? toque em um destes</div>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section class="screen" id="screen-loading">
+    <div class="load-orb"></div>
+    <div class="load-text mono" id="load-text">sincronizando sua jornada...</div>
+    <div class="load-detail mono" id="load-detail" style="display:none;"></div>
+    <div id="load-error-actions" style="display:none;">
+      <button class="btn" id="retry-btn">tentar novamente</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="screen-game">
+    <div class="scene" id="scene">
+      <div class="stage-card">
+        <div class="stage-label mono" id="stage-label"></div>
+        <p class="narration" id="stage-narration"></p>
+        <div class="pixel-frame">
+          <canvas class="pixel-canvas" id="pixel-canvas"></canvas>
+          <div class="vn-dialogue" id="stage-dialogue" style="display:none;">
+            <div class="speaker mono" id="dialogue-speaker"></div>
+            <div class="line" id="dialogue-text"></div>
+          </div>
+        </div>
+        <div class="stage-actions">
+          <button class="btn btn-primary" id="next-stage-btn">continuar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="screen" id="screen-summary">
+    <div class="scene" id="summary-scene" style="position:absolute; inset:0; z-index:0;"></div>
+    <div class="summary-wrap">
+      <div class="summary-title display" id="summary-title">Você chegou até aqui</div>
+      <div class="summary-sub mono" id="summary-sub"></div>
+
+      <div class="pixel-frame" style="margin:2rem auto 2.6rem;">
+        <canvas class="pixel-canvas" id="pixel-canvas-summary"></canvas>
+      </div>
+
+      <div class="summary-section">
+        <div class="summary-heading">missões para os próximos dias</div>
+        <ol class="activity-list" id="activity-list"></ol>
+      </div>
+
+      <div class="summary-section">
+        <div class="rec-cols">
+          <div class="rec-col">
+            <div class="summary-heading">para ler</div>
+            <ul id="books-list"></ul>
+          </div>
+          <div class="rec-col">
+            <div class="summary-heading">para assistir</div>
+            <ul id="series-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        <p id="final-quote"></p>
+      </div>
+
+      <div class="summary-actions">
+        <button class="btn" id="restart-btn">voltar ao início</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   DADOS BASE
+--------------------------------------------------------- */
+const CATEGORIES = [
+  "Ansiedade","Estresse","Cansaço","Medo","Culpa","Raiva","Dúvida","Solidão",
+  "Tristeza","Tédio","Pressa","Inveja","Timidez","Apatia","Frustração",
+  "Insegurança","Distração","Teimosia","Excesso","Cobrança","TEPT",
+  "Vício em jogos de aposta"
+];
+
+const KEYWORD_MAP = {
+  "Ansiedade": ["ansiedade","ansioso","ansiosa","nervoso","nervosismo","panico","aflicao"],
+  "Estresse": ["estresse","estressado","estressada","sobrecarregado","sobrecarga"],
+  "Cansaço": ["cansaco","cansado","cansada","exausto","exausta","fadiga","esgotado","esgotada"],
+  "Medo": ["medo","assustado","assustada","pavor","fobia"],
+  "Culpa": ["culpa","culpado","culpada","remorso"],
+  "Raiva": ["raiva","irritado","irritada","bravo","brava","furioso","furiosa"],
+  "Dúvida": ["duvida","indeciso","indecisa","confuso","confusa"],
+  "Solidão": ["solidao","sozinho","sozinha","isolado","isolada"],
+  "Tristeza": ["tristeza","triste","depre","chateado","chateada","desanimado","desanimada"],
+  "Tédio": ["tedio","entediado","entediada","monotonia"],
+  "Pressa": ["pressa","apressado","apressada","urgencia","correria"],
+  "Inveja": ["inveja","invejoso","invejosa","ciume"],
+  "Timidez": ["timidez","timido","timida","acanhado","acanhada"],
+  "Apatia": ["apatia","apatico","apatica","desmotivado","desmotivada","sem vontade"],
+  "Frustração": ["frustracao","frustrado","frustrada"],
+  "Insegurança": ["inseguranca","inseguro","insegura"],
+  "Distração": ["distracao","distraido","distraida","desatento","desatenta","procrastin"],
+  "Teimosia": ["teimosia","teimoso","teimosa"],
+  "Excesso": ["excesso","exagero","compulsao","exagerado","exagerada"],
+  "Cobrança": ["cobranca","cobrado","cobrada","autocobranca","perfeccionismo","perfeccionista"],
+  "TEPT": ["tept","transtorno de estresse pos traumatico","estresse pos traumatico"],
+  "Vício em jogos de aposta": ["aposta","apostas","jogo de azar","vicio em jogo","bet","apostador","apostadora"]
+};
+
+const MOOD_SEQUENCE = [
+  {key:"intro", label:"Início", mood:"heavy"},
+  {key:"development", label:"Desenvolvimento", mood:"heavy"},
+  {key:"climax", label:"Clímax", mood:"turning"},
+  {key:"resolution", label:"Superação", mood:"hopeful"}
+];
+
+/* ---------------------------------------------------------
+   GERADOR DE PIXEL ART
+--------------------------------------------------------- */
+function pixelPalette(mood){
+  if(mood === "heavy"){
+    return {
+      sky:["#0d0714","#120a1a","#140b1c","#1a0f22","#1c1128","#211430","#241733","#281a38","#2c1c3d","#2f1f40","#33223f","#362540"],
+      star:"#4a3d5c", orbGlow:"#4a3d5c", orb:"#6a5a7a",
+      mtnFar:"#160f22", mtnMid:"#110b1c", mtnNear:"#0c0714",
+      ground:"#0a0710", groundDeep:"#050308", groundDetail:"#241733",
+      trunk:"#1c1420", branch:"#241a2c",
+      weather:"#8a6a95", cloud:"#241a30", cloudHi:"#332844",
+      skin:"#d8c9c0", skinShade:"#b8a89e", hair:"#241733", hairHi:"#332244",
+      shirt:"#4a3d5c", shirtShade:"#332a44", pants:"#241733",
+      accentGlow:"#7a5c85", eye:"#c9bcd6", blush:"#5c4258",
+      windowLight:"#463652", puddle:"#1a1428", rim:"#4a3d5c"
+    };
+  }
+  if(mood === "turning"){
+    return {
+      sky:["#1a1226","#20182e","#241a33","#2f2036","#3a2438","#472a39","#54303a","#603638","#6e4038","#7a4838","#87503c","#93583e"],
+      star:"#a06a4a", orbGlow:"#e0985a", orb:"#d98a4b",
+      mtnFar:"#2a1c2e", mtnMid:"#241826", mtnNear:"#1c1424",
+      ground:"#120e1a", groundDeep:"#0c0912", groundDetail:"#3a2a2e",
+      trunk:"#241a1e", branch:"#4a3428",
+      weather:"#a06a4a", cloud:"#8a5f4f", cloudHi:"#c07a52",
+      skin:"#e8cdb8", skinShade:"#c9ac93", hair:"#2e2018", hairHi:"#4a3324",
+      shirt:"#a0603f", shirtShade:"#733f2a", pants:"#2e2018",
+      accentGlow:"#e0985a", eye:"#f0c98a", blush:"#c97a5a",
+      windowLight:"#e0985a", puddle:"#3a2620", rim:"#e0985a"
+    };
+  }
+  return {
+    sky:["#0a2620","#0c2a22","#0e2620","#103024","#13392c","#184230","#1f4f38","#264a3e","#2f6b46","#356f4a","#3f8556","#4a9560"],
+    star:null, orbGlow:"#ffe9a8", orb:"#f2c869",
+    mtnFar:"#123329", mtnMid:"#0f2a20", mtnNear:"#0b1f18",
+    ground:"#081a13", groundDeep:"#05130d", groundDetail:"#2f6b46",
+    trunk:"#2e2418", branch:"#3f8556",
+    weather:"#f2c869", cloud:"#3a6b4a", cloudHi:"#f2c869",
+    skin:"#f0d9bd", skinShade:"#d3b899", hair:"#2e2418", hairHi:"#4a3a28",
+    shirt:"#3f8556", shirtShade:"#2a5c3a", pants:"#2e2418",
+    accentGlow:"#f2c869", eye:"#173d2c", blush:"#e08a6a",
+    windowLight:"#ffe9a8", puddle:"#0d2e22", rim:"#f2c869"
+  };
+}
+
+function seededRnd(seed){
+  let s = (seed || 1) * 97 + 13;
+  return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+function drawPixelScene(canvas, mood, seed, stageKey){
+  // resolução maior (mesma proporção 3:2) = muito mais detalhe na mesma técnica de canvas,
+  // sem imagens externas, sem vídeo/gif — continua leve e com o mesmo formato de animação.
+  const W = 168, H = 112;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const p = pixelPalette(mood);
+  const rnd = seededRnd(seed);
+  const horizon = Math.floor(H * 0.6);
+
+  // --- céu em degradê suave, estilo anime, com mais faixas para transição macia ---
+  const bandH = horizon / p.sky.length;
+  p.sky.forEach((color, i)=>{
+    ctx.fillStyle = color;
+    ctx.fillRect(0, Math.floor(i * bandH), W, Math.ceil(bandH) + 1);
+  });
+  ctx.globalAlpha = 0.35;
+  for(let i=1;i<p.sky.length;i++){
+    ctx.fillStyle = p.sky[i-1];
+    for(let x=0; x<W; x+=2){ ctx.fillRect(x, Math.floor(i*bandH), 1, 1); }
+  }
+  ctx.globalAlpha = 1;
+
+  // --- estrelas com leve cintilar (céus escuros) ---
+  if(p.star){
+    for(let i=0;i<70;i++){
+      const x = Math.floor(rnd()*W), y = Math.floor(rnd()*horizon*0.7);
+      ctx.fillStyle = (i % 9 === 0) ? p.orbGlow : p.star;
+      ctx.globalAlpha = 0.3 + rnd()*0.7;
+      ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- sol/lua grande e luminoso, com halo em camadas (assinatura visual anime) ---
+  const orbX = W - 38, orbY = mood === "heavy" ? 14 : (mood === "turning" ? 28 : 20);
+  ctx.fillStyle = p.orbGlow; ctx.globalAlpha = 0.12; ctx.beginPath(); ctx.arc(orbX+7,orbY+7,26,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 0.22; ctx.beginPath(); ctx.arc(orbX+7,orbY+7,17,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = p.orb;
+  ctx.fillRect(orbX, orbY, 14, 14);
+  ctx.fillRect(orbX-2, orbY+4, 2,6); ctx.fillRect(orbX+14, orbY+4, 2,6);
+  ctx.fillRect(orbX+4, orbY-2, 6,2); ctx.fillRect(orbX+4, orbY+14, 6,2);
+  ctx.fillStyle = p.orbGlow;
+  ctx.fillRect(orbX+3, orbY+3, 4,4);
+  if(mood === "hopeful" || mood === "turning"){
+    ctx.fillStyle = p.orbGlow;
+    for(let r=0;r<10;r++){
+      const len = 8 + (r%3)*6;
+      const ang = r*0.63;
+      const rx = orbX + 7 + Math.cos(ang)*15;
+      const ry = orbY + 7 + Math.sin(ang)*15;
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(Math.floor(rx), Math.floor(ry), 1, 1);
+      ctx.fillRect(Math.floor(rx + Math.cos(ang)*len), Math.floor(ry + Math.sin(ang)*len), 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- raios de luz (god rays) atravessando as nuvens — reforça a "virada" da história ---
+  if(mood === "turning" || mood === "hopeful"){
+    ctx.fillStyle = p.orbGlow;
+    for(let i=0;i<5;i++){
+      const rx = orbX + 7 - 40 + i*20;
+      ctx.globalAlpha = 0.06;
+      ctx.beginPath();
+      ctx.moveTo(orbX+7, orbY+7);
+      ctx.lineTo(rx, H*0.62);
+      ctx.lineTo(rx+14, H*0.62);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- nuvens em camadas com sombra + brilho, mais orgânicas ---
+  if(mood !== "hopeful" || true){
+    const cloudCount = mood === "heavy" ? 9 : (mood === "turning" ? 6 : 4);
+    for(let i=0;i<cloudCount;i++){
+      const cx = Math.floor(rnd()*W), cy = 6 + Math.floor(rnd()*(horizon*0.42));
+      const scale = 0.7 + rnd()*0.9;
+      ctx.fillStyle = p.cloud;
+      ctx.globalAlpha = 0.55;
+      drawCloudPuff(ctx, cx, cy, scale);
+      ctx.fillStyle = p.cloudHi || p.cloud;
+      ctx.globalAlpha = 0.3;
+      drawCloudPuff(ctx, cx-2, cy-1, scale*0.7);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // --- montanhas em três camadas (parallax mais profundo) ---
+  ctx.fillStyle = p.mtnFar;
+  for(let x=0; x<W; x++){
+    const h = 8 + Math.floor(Math.abs(Math.sin((x + seed*4) * 0.10)) * 16);
+    ctx.fillRect(x, horizon - h - 10, 1, h);
+  }
+  ctx.fillStyle = p.mtnMid || p.mtnFar;
+  for(let x=0; x<W; x++){
+    const h = 6 + Math.floor(Math.abs(Math.sin((x + seed*7) * 0.15)) * 13);
+    ctx.fillRect(x, horizon - h - 4, 1, h);
+  }
+  ctx.fillStyle = p.mtnNear;
+  for(let x=0; x<W; x++){
+    const h = 5 + Math.floor(Math.abs(Math.sin((x + seed*9) * 0.22)) * 11);
+    ctx.fillRect(x, horizon - h, 1, h);
+  }
+
+  // --- chão em camadas com textura + faixa de reflexo (chão molhado / orvalho) ---
+  ctx.fillStyle = p.ground;
+  ctx.fillRect(0, horizon, W, H - horizon);
+  ctx.fillStyle = p.groundDeep;
+  ctx.fillRect(0, horizon + Math.floor((H-horizon)*0.55), W, Math.ceil((H-horizon)*0.45));
+  if(p.puddle){
+    ctx.fillStyle = p.puddle;
+    ctx.globalAlpha = 0.5;
+    ctx.fillRect(0, horizon, W, 2);
+    ctx.globalAlpha = 1;
+  }
+  ctx.fillStyle = p.groundDetail;
+  const textureCount = mood === "hopeful" ? 46 : (mood === "turning" ? 30 : 20);
+  for(let i=0;i<textureCount;i++){
+    const x = Math.floor(rnd()*W), y = horizon + Math.floor(rnd()*(H-horizon)*0.7);
+    if(mood === "heavy"){ ctx.fillRect(x, y, 4, 1); }
+    else if(mood === "turning"){ ctx.fillRect(x, y, 2, 2); }
+    else { ctx.fillRect(x, y-1, 2,1); ctx.fillRect(x, y, 2,2); }
+  }
+
+  // --- caminho/trilha no chão, guia o olhar até o personagem (reforça a "jornada") ---
+  drawPath(ctx, W, H, horizon, p, mood);
+
+  // --- elementos únicos por fase da história (cenas diferentes de verdade) ---
+  drawStageProps(ctx, stageKey, mood, p, rnd, W, H, horizon);
+
+  // --- árvore lateral, reage ao clima ---
+  const treeX = 20 + Math.floor(rnd()*10);
+  drawTree(ctx, mood, treeX, horizon, p, rnd);
+
+  // --- pássaros (céus em recuperação) ---
+  if(mood !== "heavy"){
+    ctx.fillStyle = p.mtnNear;
+    const birdCount = mood === "hopeful" ? 6 : 3;
+    for(let i=0;i<birdCount;i++){
+      const bx = 30 + Math.floor(rnd()*(W-70)), by = 10 + Math.floor(rnd()*16);
+      ctx.fillRect(bx, by, 3,1); ctx.fillRect(bx-3, by-1, 3,1); ctx.fillRect(bx+3, by-1, 3,1);
+    }
+  }
+
+  // --- chuva (céu pesado) ---
+  if(mood === "heavy"){
+    ctx.fillStyle = p.weather;
+    ctx.globalAlpha = 0.6;
+    for(let i=0;i<60;i++){
+      const x = Math.floor(rnd()*W), y = Math.floor(rnd()*horizon);
+      ctx.fillRect(x, y, 1, 6);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- personagem com sombra, sombreamento anime e pose por fase ---
+  const cx = Math.floor(W/2) + Math.floor((rnd()-0.5)*10);
+  drawCharacter(ctx, mood, stageKey, cx, horizon, p);
+}
+
+// nuvem orgânica feita de vários círculos sobrepostos (mais suave que retângulos)
+function drawCloudPuff(ctx, cx, cy, scale){
+  const parts = [[0,0,6],[7,-2,5],[-6,-1,4],[4,3,5],[-3,3,4],[11,1,4]];
+  parts.forEach(([dx,dy,r])=>{
+    ctx.beginPath();
+    ctx.arc(cx+dx*scale, cy+dy*scale, r*scale, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// trilha de terra/pedra que atravessa o chão até o personagem
+function drawPath(ctx, W, H, horizon, p, mood){
+  ctx.fillStyle = p.groundDeep;
+  ctx.globalAlpha = mood === "heavy" ? 0.5 : 0.65;
+  for(let y=horizon; y<H; y+=2){
+    const t = (y - horizon) / (H - horizon);
+    const width = 6 + t*26;
+    const cx = W/2 + Math.sin(t*3 + (mood==="turning"?1:0))*6;
+    ctx.fillRect(Math.floor(cx-width/2), y, Math.floor(width), 2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// elementos que tornam cada fase da história visualmente distinta
+function drawStageProps(ctx, stageKey, mood, p, rnd, W, H, horizon){
+  if(stageKey === "intro"){
+    // janela distante iluminada — o ponto de partida, ainda dentro da própria dor
+    const wx = W*0.18, wy = horizon - 30;
+    ctx.fillStyle = p.mtnNear; ctx.fillRect(wx-10, wy, 22, 34);
+    ctx.fillStyle = p.windowLight; ctx.globalAlpha = 0.85;
+    ctx.fillRect(wx-4, wy+8, 6,8); ctx.fillRect(wx+4, wy+8, 6,8);
+    ctx.globalAlpha = 0.25; ctx.fillRect(wx-7, wy+5, 20, 14);
+    ctx.globalAlpha = 1;
+  } else if(stageKey === "development"){
+    // postes/marcos tortos ao longo do caminho — o peso do problema se acumulando
+    for(let i=0;i<3;i++){
+      const px = W*0.62 + i*22 + rnd()*6, py = horizon - 2;
+      ctx.fillStyle = p.mtnNear;
+      ctx.fillRect(px, py-18-i*2, 3, 18+i*2);
+      ctx.fillStyle = p.weather; ctx.globalAlpha = 0.4;
+      ctx.fillRect(px-1, py-20-i*2, 5,3);
+      ctx.globalAlpha = 1;
+    }
+  } else if(stageKey === "climax"){
+    // encruzilhada — o momento de virada, dois caminhos, luz vindo de um deles
+    ctx.strokeStyle = p.groundDetail;
+    ctx.fillStyle = p.groundDeep;
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(W*0.3, H); ctx.lineTo(W*0.46, horizon+4); ctx.lineTo(W*0.56, horizon+4); ctx.lineTo(W*0.15, H);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else {
+    // resolution: campo aberto com flores/luzes — a recompensa visual da superação
+    ctx.fillStyle = p.accentGlow;
+    for(let i=0;i<24;i++){
+      const x = Math.floor(rnd()*W), y = horizon + Math.floor(rnd()*(H-horizon)*0.8);
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(x, y, 2,2);
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawTree(ctx, mood, x, groundY, p, rnd){
+  const lean = mood === "heavy" ? 5 : (mood === "turning" ? 2 : 0);
+  ctx.fillStyle = p.trunk;
+  for(let i=0;i<18;i++){
+    ctx.fillRect(x + Math.floor((i/18)*lean), groundY - i, 3, 1);
+  }
+  const topX = x + lean, topY = groundY - 18;
+  ctx.fillStyle = p.branch;
+  if(mood === "heavy"){
+    ctx.fillRect(topX-7, topY, 5,1); ctx.fillRect(topX+3, topY-3, 6,1);
+    ctx.fillRect(topX-4, topY-6, 5,1); ctx.fillRect(topX+1, topY-9, 4,1);
+  }else if(mood === "turning"){
+    ctx.fillRect(topX-7, topY, 5,1); ctx.fillRect(topX+3, topY-3, 6,1);
+    ctx.fillRect(topX-4, topY-6, 5,1);
+    ctx.fillStyle = p.groundDetail;
+    ctx.fillRect(topX-5, topY-1, 3,1); ctx.fillRect(topX+5, topY-4, 3,1);
+    ctx.fillStyle = p.accentGlow; ctx.globalAlpha=0.5;
+    ctx.fillRect(topX-2, topY-7, 1,1); ctx.fillRect(topX+4, topY-2, 1,1);
+    ctx.globalAlpha = 1;
+  }else{
+    ctx.fillRect(topX-9, topY-2, 18, 5);
+    ctx.fillRect(topX-6, topY-6, 12, 4);
+    ctx.fillRect(topX-3, topY-9, 7, 3);
+    ctx.fillStyle = p.accentGlow;
+    for(let i=0;i<6;i++){
+      const bx = topX-8+Math.floor(rnd()*17), by = topY-8+Math.floor(rnd()*10);
+      ctx.fillRect(bx, by, 1,1);
+    }
+  }
+}
+
+function drawCharacter(ctx, mood, stageKey, cx, groundY, p){
+  // sombra no chão
+  ctx.fillStyle = "#000000";
+  ctx.globalAlpha = 0.35;
+  ctx.fillRect(cx-6, groundY-1, 12, 2);
+  ctx.globalAlpha = 1;
+
+  const slump = (mood === "heavy") ? 2 : (stageKey === "development" ? 1 : 0);
+  const headY = groundY - 27 + slump;
+
+  // cabelo de trás (mais volumoso, característico de anime)
+  ctx.fillStyle = p.hair;
+  ctx.fillRect(cx-5, headY-3, 10, 6);
+  ctx.fillRect(cx-6, headY, 2, 5);
+  ctx.fillRect(cx+4, headY, 2, 5);
+
+  // rosto
+  ctx.fillStyle = p.skin;
+  ctx.fillRect(cx-4, headY+1, 8, 6);
+  ctx.fillStyle = p.skinShade || p.skin;
+  ctx.fillRect(cx+2, headY+1, 2, 6); // sombra lateral do rosto (luz da esquerda)
+
+  // franja / mecha de cabelo com brilho (destaque anime)
+  ctx.fillStyle = p.hair;
+  ctx.fillRect(cx-5, headY-1, 10, 3);
+  ctx.fillStyle = p.hairHi || p.hair;
+  ctx.globalAlpha = 0.8;
+  ctx.fillRect(cx-3, headY-1, 2, 1);
+  ctx.globalAlpha = 1;
+
+  // olhos grandes e expressivos — mudam de "fechados/tristes" para "abertos/brilhantes"
+  const eyesClosed = (stageKey === "intro" || stageKey === "development" || mood === "heavy");
+  ctx.fillStyle = p.hair;
+  if(eyesClosed){
+    ctx.fillRect(cx-3, headY+4, 2, 1);
+    ctx.fillRect(cx+1, headY+4, 2, 1);
+  }else{
+    ctx.fillRect(cx-3, headY+3, 2, 2);
+    ctx.fillRect(cx+1, headY+3, 2, 2);
+    ctx.fillStyle = p.eye || "#fff";
+    ctx.fillRect(cx-3, headY+3, 1, 1);
+    ctx.fillRect(cx+1, headY+3, 1, 1);
+    ctx.fillStyle = "#ffffff";
+    ctx.globalAlpha = 0.9;
+    ctx.fillRect(cx-3, headY+3, 1, 1);
+    ctx.fillRect(cx+1, headY+3, 1, 1);
+    ctx.globalAlpha = 1;
+  }
+  // bochechas (leve rubor — mais expressivo/anime)
+  if(p.blush && !eyesClosed){
+    ctx.fillStyle = p.blush; ctx.globalAlpha = 0.35;
+    ctx.fillRect(cx-4, headY+5, 1,1); ctx.fillRect(cx+3, headY+5, 1,1);
+    ctx.globalAlpha = 1;
+  }
+
+  // torso com dobras de roupa
+  ctx.fillStyle = p.shirt;
+  ctx.fillRect(cx-5, headY+7, 10, 10);
+  ctx.fillStyle = p.shirtShade;
+  ctx.fillRect(cx+2, headY+7, 3, 10); // sombreamento lateral
+  ctx.fillRect(cx-5, headY+14, 10, 2); // dobra inferior
+
+  // pernas
+  ctx.fillStyle = p.pants;
+  ctx.fillRect(cx-5, headY+17, 4, 9);
+  ctx.fillRect(cx+1, headY+17, 4, 9);
+  ctx.fillStyle = p.groundDeep || p.pants;
+  ctx.fillRect(cx-5, headY+24, 4, 2); ctx.fillRect(cx+1, headY+24, 4, 2); // sapatos
+
+  // braços — pose muda por fase/mood, reforçando a emoção de cada cena
+  ctx.fillStyle = p.shirt;
+  if(stageKey === "resolution" || mood === "hopeful"){
+    // braços abertos para cima — superação
+    ctx.fillRect(cx-10, headY+2, 3, 9);
+    ctx.fillRect(cx+7, headY+2, 3, 9);
+    ctx.fillStyle = p.skin;
+    ctx.fillRect(cx-10, headY+1, 3, 2); ctx.fillRect(cx+7, headY+1, 3, 2);
+  }else if(stageKey === "climax" || mood === "turning"){
+    // um braço se erguendo — o início da virada
+    ctx.fillRect(cx-9, headY+6, 3, 7);
+    ctx.fillRect(cx+6, headY+3, 3, 9);
+    ctx.fillStyle = p.skin;
+    ctx.fillRect(cx+6, headY+2, 3, 2);
+  }else if(stageKey === "development"){
+    // braços cruzados/tensos ao redor do corpo — o peso do problema
+    ctx.fillRect(cx-8, headY+11, 3, 7);
+    ctx.fillRect(cx+5, headY+11, 3, 7);
+  }else{
+    // braços caídos — introspecção
+    ctx.fillRect(cx-7, headY+13, 3, 6);
+    ctx.fillRect(cx+4, headY+13, 3, 6);
+  }
+}
+
+/* ---------------------------------------------------------
+   ESTADO
+--------------------------------------------------------- */
+let state = { screen:"home", story:null, stageIndex:0, lastInputText:"" };
+
+/* ---------------------------------------------------------
+   UTIL
+--------------------------------------------------------- */
+function normalize(s){
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+function detectCategory(text){
+  const n = normalize(text);
+  for(const cat of CATEGORIES){
+    const words = KEYWORD_MAP[cat] || [];
+    for(const w of words){
+      if(n.includes(normalize(w))) return cat;
+    }
+  }
+  return null;
+}
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* ---------------------------------------------------------
+   CHIPS NA HOME
+--------------------------------------------------------- */
+const chipField = document.getElementById("chip-field");
+CATEGORIES.forEach((cat,i)=>{
+  const chip = document.createElement("div");
+  chip.className = "chip mono";
+  chip.textContent = cat;
+  const rot = (Math.random()*4 - 2).toFixed(1);
+  chip.style.transform = `rotate(${rot}deg)`;
+  chip.addEventListener("click", ()=>{
+    document.getElementById("problem-input").value = cat;
+    submitProblem(cat);
+  });
+  chipField.appendChild(chip);
+});
+
+/* ---------------------------------------------------------
+   INPUT
+--------------------------------------------------------- */
+const problemInput = document.getElementById("problem-input");
+problemInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){
+    const val = problemInput.value.trim();
+    if(val.length > 0) submitProblem(val);
+  }
+});
+
+function submitProblem(text){
+  state.lastInputText = text;
+  const localMatch = detectCategory(text);
+  showScreen("screen-loading");
+  document.getElementById("load-text").textContent = "sincronizando sua jornada...";
+  document.getElementById("load-error-actions").style.display = "none";
+  const detailEl0 = document.getElementById("load-detail");
+  detailEl0.style.display = "none";
+  detailEl0.textContent = "";
+  generateStory(text, localMatch);
+}
+
+/* ---------------------------------------------------------
+   CHAMADA DE IA
+--------------------------------------------------------- */
+async function generateStory(rawText, localMatch){
+  const categoriesStr = CATEGORIES.map(c=>`"${c}"`).join(", ");
+  const systemPrompt = `Motor narrativo do jogo "Don't Give Up" (site Syntro). Gere uma microhistória terapêutica original, em português do Brasil, de um personagem fictício superando um problema emocional.
+REGRAS:
+1. Responda SOMENTE com JSON válido e compacto (sem espaços/quebras de linha desnecessários). Sem markdown, sem crases, sem texto antes ou depois, sem comentários.
+2. Schema exato (não adicione nem remova campos):
+{"detected_problem":"<uma destas: ${categoriesStr}>","character_name":"<nome curto>","stages":[{"key":"intro","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"development","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"climax","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"resolution","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}}],"activities":["<até 6 palavras>","<até 6 palavras>","<até 6 palavras>"],"books":[{"title":"<livro real>","author":"<autor>"},{"title":"<livro real>","author":"<autor>"}],"series":["<título real 1>","<título real 2>"],"quote":"<frase inspiradora, até 12 palavras>"}
+3. Tom: intro/development pesados (a dor real do problema, sem detalhes gráficos); climax é virada; resolution mostra uma atitude concreta que ajudou a superar, com esperança.
+4. books e series: títulos reais e relevantes ao tema.
+5. Nunca mencione automutilação, suicídio ou métodos de aposta.
+6. PRIORIDADE MÁXIMA: caber dentro de um limite curto de tokens. Prefira frases curtas a cortar campos.`;
+
+  const userMsg = localMatch
+    ? `Pessoa escreveu: "${rawText}". Problema identificado: "${localMatch}". Use esse valor em detected_problem. Gere o JSON agora.`
+    : `Pessoa escreveu: "${rawText}". Escolha o mais próximo entre (${categoriesStr}) para detected_problem. Gere o JSON agora.`;
+
+  try{
+    const response = await fetch("/api/generate-story", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ systemPrompt, userMsg })
+    });
+
+    let data;
+    try{ data = await response.json(); }
+    catch(e){ throw new Error("resposta_invalida"); }
+
+    if(!response.ok){
+      const msg = (data && data.error) ? data.error : `http_${response.status}`;
+      throw new Error(msg);
+    }
+    if(data && data.error){
+      throw new Error(data.error);
+    }
+    if(!data || !Array.isArray(data.content)){
+      throw new Error("sem_conteudo");
+    }
+
+    const rawTextOut = data.content.map(b=>b.text||"").join("");
+    const parsed = parseStoryJSON(rawTextOut);
+    const validated = validateStory(parsed);
+    if(!validated){
+      console.error("Syntro: JSON recebido não pôde ser validado ->", rawTextOut);
+      throw new Error("json_invalido");
+    }
+
+    state.story = validated;
+    state.stageIndex = 0;
+    startGame();
+  }catch(err){
+    console.error("Syntro: falha ao gerar história ->", err);
+    const detailEl = document.getElementById("load-detail");
+    document.getElementById("load-text").textContent = "sua jornada teve uma interferência. tente novamente.";
+    detailEl.textContent = "detalhe: " + (err && err.message ? err.message : String(err));
+    detailEl.style.display = "block";
+    document.getElementById("load-error-actions").style.display = "block";
+  }
+}
+
+function parseStoryJSON(text){
+  if(!text) return null;
+  const attempts = [];
+  attempts.push(text);
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if(first !== -1 && last !== -1 && last > first){
+    attempts.push(text.slice(first, last+1));
+  }
+  if(first !== -1){
+    attempts.push(repairTruncatedJSON(text.slice(first)));
+  }
+  for(const candidate of attempts){
+    try{ return JSON.parse(candidate); }catch(e){ /* tenta a próxima */ }
+  }
+  return null;
+}
+
+// Fecha aspas/colchetes/chaves deixados abertos quando a resposta é cortada
+function repairTruncatedJSON(text){
+  let inStr = false, esc = false;
+  const stack = [];
+  for(let i=0; i<text.length; i++){
+    const c = text[i];
+    if(inStr){
+      if(esc) esc = false;
+      else if(c === "\\") esc = true;
+      else if(c === '"') inStr = false;
+    }else{
+      if(c === '"') inStr = true;
+      else if(c === "{" || c === "[") stack.push(c);
+      else if(c === "}" && stack[stack.length-1] === "{") stack.pop();
+      else if(c === "]" && stack[stack.length-1] === "[") stack.pop();
+    }
+  }
+  let repaired = text;
+  if(inStr) repaired += '"';
+  repaired = repaired.replace(/,\s*$/, "");
+  for(let i = stack.length-1; i >= 0; i--){
+    repaired += stack[i] === "{" ? "}" : "]";
+  }
+  return repaired;
+}
+
+// Garante que a história tem os campos mínimos para o jogo não quebrar visualmente
+function validateStory(story){
+  if(!story || typeof story !== "object") return null;
+  if(!Array.isArray(story.stages) || story.stages.length === 0) return null;
+
+  const keys = ["intro","development","climax","resolution"];
+  const stages = keys.map((key,i)=>{
+    const found = story.stages.find(s=>s && s.key === key) || story.stages[i] || {};
+    return {
+      key,
+      narration: (found.narration && String(found.narration).trim()) || "A jornada continua, mesmo em silêncio.",
+      dialogue: (found.dialogue && found.dialogue.text) ? {
+        speaker: found.dialogue.speaker || story.character_name || "Voz interior",
+        text: found.dialogue.text
+      } : null
+    };
+  });
+
+  return {
+    detected_problem: story.detected_problem || "Ansiedade",
+    character_name: story.character_name || "Alguém como você",
+    stages,
+    activities: Array.isArray(story.activities) && story.activities.length ? story.activities.slice(0,3) : [
+      "Anote um pequeno passo para amanhã.",
+      "Respire fundo por um minuto, sem pressa.",
+      "Fale sobre isso com alguém de confiança."
+    ],
+    books: Array.isArray(story.books) && story.books.length ? story.books.slice(0,2) : [],
+    series: Array.isArray(story.series) && story.series.length ? story.series.slice(0,2) : [],
+    quote: story.quote || "Um passo de cada vez já é caminho."
+  };
+}
+
+document.getElementById("retry-btn").addEventListener("click", ()=>{
+  generateStory(state.lastInputText, detectCategory(state.lastInputText));
+});
+
+/* ---------------------------------------------------------
+   ARTE DE CENA (SVG abstrato por mood)
+--------------------------------------------------------- */
+function sceneSVG(mood){
+  if(mood === "heavy"){
+    return `<svg class="scene-art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      <polyline points="0,120 140,180 260,110 400,200 540,130 680,210 800,150" fill="none" stroke="var(--scene-accent)" stroke-width="1.4" opacity="0.5"/>
+      <polyline points="0,420 150,380 300,440 450,370 600,430 800,390" fill="none" stroke="var(--scene-accent)" stroke-width="1" opacity="0.3"/>
+      <line x1="80" y1="0" x2="40" y2="600" stroke="var(--scene-accent)" stroke-width="0.7" opacity="0.2"/>
+      <line x1="700" y1="0" x2="760" y2="600" stroke="var(--scene-accent)" stroke-width="0.7" opacity="0.2"/>
+    </svg>`;
+  }
+  if(mood === "turning"){
+    return `<svg class="scene-art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      <circle cx="400" cy="440" r="90" fill="var(--scene-accent)" opacity="0.18"/>
+      <path d="M0,460 Q200,420 400,460 T800,460" fill="none" stroke="var(--scene-accent)" stroke-width="1.2" opacity="0.4"/>
+      <path d="M0,500 Q200,470 400,500 T800,500" fill="none" stroke="var(--scene-accent)" stroke-width="1" opacity="0.25"/>
+    </svg>`;
+  }
+  return `<svg class="scene-art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <circle cx="400" cy="520" r="70" fill="var(--scene-accent)" opacity="0.28"/>
+    <g stroke="var(--scene-accent)" stroke-width="1.1" opacity="0.35">
+      <line x1="400" y1="520" x2="400" y2="380"/>
+      <line x1="400" y1="520" x2="280" y2="410"/>
+      <line x1="400" y1="520" x2="520" y2="410"/>
+      <line x1="400" y1="520" x2="190" y2="470"/>
+      <line x1="400" y1="520" x2="610" y2="470"/>
+    </g>
+  </svg>`;
+}
+
+function spawnParticles(container, mood){
+  container.querySelectorAll(".particle").forEach(p=>p.remove());
+  const count = 12;
+  const anim = mood === "heavy" ? "fall" : (mood === "turning" ? "drift" : "rise");
+  const dur = mood === "hopeful" ? 9 : 12;
+  for(let i=0;i<count;i++){
+    const p = document.createElement("div");
+    p.className = "particle";
+    const size = 2 + Math.random()*3;
+    p.style.width = size+"px";
+    p.style.height = size+"px";
+    p.style.left = (Math.random()*100)+"%";
+    p.style.top = mood === "fall" ? "-5%" : (Math.random()*100)+"%";
+    p.style.animation = `${anim} ${dur + Math.random()*6}s linear ${Math.random()*6}s infinite`;
+    container.appendChild(p);
+  }
+}
+
+/* ---------------------------------------------------------
+   JOGO — TELAS DE HISTÓRIA
+--------------------------------------------------------- */
+function startGame(){
+  showScreen("screen-game");
+  renderStage();
+}
+
+function renderStage(){
+  const seq = MOOD_SEQUENCE;
+  const stageInfo = seq[state.stageIndex];
+  const stageData = state.story.stages.find(s=>s.key === stageInfo.key) || state.story.stages[state.stageIndex];
+
+  const scene = document.getElementById("scene");
+  scene.className = "scene mood-" + stageInfo.mood;
+  scene.style.setProperty("--scene-bg1", moodColors(stageInfo.mood).bg1);
+  scene.style.setProperty("--scene-bg2", moodColors(stageInfo.mood).bg2);
+  scene.style.setProperty("--scene-accent", moodColors(stageInfo.mood).accent);
+
+  const oldArt = scene.querySelector("svg.scene-art");
+  if(oldArt) oldArt.remove();
+  scene.insertAdjacentHTML("afterbegin", sceneSVG(stageInfo.mood));
+  spawnParticles(scene, stageInfo.mood);
+
+  document.getElementById("stage-label").textContent = state.story.detected_problem;
+  document.getElementById("stage-narration").textContent = stageData.narration || "";
+
+  drawPixelScene(document.getElementById("pixel-canvas"), stageInfo.mood, state.stageIndex + 1, stageInfo.key);
+
+  const dlg = document.getElementById("stage-dialogue");
+  if(stageData.dialogue && stageData.dialogue.text){
+    dlg.style.display = "block";
+    document.getElementById("dialogue-speaker").textContent = stageData.dialogue.speaker || state.story.character_name || "";
+    document.getElementById("dialogue-text").textContent = "\u201C" + stageData.dialogue.text + "\u201D";
+  }else{
+    dlg.style.display = "none";
+  }
+
+  const btn = document.getElementById("next-stage-btn");
+  btn.textContent = state.stageIndex === seq.length - 1 ? "ver seu caminho" : "continuar";
+}
+
+function moodColors(mood){
+  if(mood === "heavy") return {bg1:"#1a1015", bg2:"#0b0d12", accent:"#a64b4b"};
+  if(mood === "turning") return {bg1:"#2a1f14", bg2:"#151018", accent:"#c98a4b"};
+  return {bg1:"#123028", bg2:"#0d1f1c", accent:"#4faf8c"};
+}
+
+document.getElementById("next-stage-btn").addEventListener("click", ()=>{
+  if(state.stageIndex < MOOD_SEQUENCE.length - 1){
+    state.stageIndex++;
+    renderStage();
+  }else{
+    renderSummary();
+  }
+});
+
+/* ---------------------------------------------------------
+   RESUMO FINAL
+--------------------------------------------------------- */
+function renderSummary(){
+  showScreen("screen-summary");
+  const story = state.story;
+
+  const scene = document.getElementById("summary-scene");
+  scene.className = "scene mood-hopeful";
+  scene.style.setProperty("--scene-bg1", moodColors("hopeful").bg1);
+  scene.style.setProperty("--scene-bg2", moodColors("hopeful").bg2);
+  scene.style.setProperty("--scene-accent", moodColors("hopeful").accent);
+  scene.innerHTML = sceneSVG("hopeful");
+  spawnParticles(scene, "hopeful");
+  drawPixelScene(document.getElementById("pixel-canvas-summary"), "hopeful", 9);
+
+  document.getElementById("summary-sub").textContent = `${story.character_name || "a jornada"} · ${story.detected_problem}`;
+
+  const actList = document.getElementById("activity-list");
+  actList.innerHTML = "";
+  (story.activities || []).forEach((a,i)=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="num">${String(i+1).padStart(2,"0")}</span><span>${a}</span>`;
+    actList.appendChild(li);
+  });
+
+  const booksList = document.getElementById("books-list");
+  booksList.innerHTML = "";
+  (story.books || []).forEach(b=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<b>${b.title || b}</b>${b.author ? " — " + b.author : ""}`;
+    booksList.appendChild(li);
+  });
+
+  const seriesList = document.getElementById("series-list");
+  seriesList.innerHTML = "";
+  (story.series || []).forEach(s=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<b>${s}</b>`;
+    seriesList.appendChild(li);
+  });
+
+  document.getElementById("final-quote").textContent = "\u201C" + (story.quote || "") + "\u201D";
+}
+
+document.getElementById("restart-btn").addEventListener("click", ()=>{
+  state = { screen:"home", story:null, stageIndex:0, lastInputText:"" };
+  problemInput.value = "";
+  showScreen("screen-home");
+});
+</script>
+</body>
+</html>
