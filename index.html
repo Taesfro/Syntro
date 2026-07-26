@@ -875,10 +875,10 @@ async function generateStory(rawText, localMatch){
 REGRAS:
 1. Responda SOMENTE com JSON válido e compacto (sem espaços/quebras de linha desnecessários). Sem markdown, sem crases, sem texto antes ou depois, sem comentários.
 2. Schema exato (não adicione nem remova campos):
-{"detected_problem":"<uma destas: ${categoriesStr}>","character_name":"<nome curto>","stages":[{"key":"intro","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"development","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"climax","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"resolution","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}}],"activities":["<até 6 palavras>","<até 6 palavras>","<até 6 palavras>"],"books":[{"title":"<livro real>","author":"<autor>"},{"title":"<livro real>","author":"<autor>"}],"series":["<título real 1>","<título real 2>"],"quote":"<frase inspiradora, até 12 palavras>"}
+{"detected_problem":"<uma destas: ${categoriesStr}>","character_name":"Você","stages":[{"key":"intro","narration":"<até 18 palavras>","dialogue":{"speaker":"Você","text":"<até 9 palavras>"}},{"key":"development","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"climax","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}},{"key":"resolution","narration":"<até 18 palavras>","dialogue":{"speaker":"<nome>","text":"<até 9 palavras>"}}],"activities":["<até 6 palavras>","<até 6 palavras>","<até 6 palavras>"],"books":[{"title":"<livro real>","author":"<autor>"},{"title":"<livro real>","author":"<autor>"}],"series":["<título real 1>","<título real 2>"],"quote":"<frase inspiradora, até 12 palavras>"}
 3. Tom: intro/development pesados (a dor real do problema, sem detalhes gráficos); climax é virada; resolution mostra uma atitude concreta que ajudou a superar, com esperança.
 4. books e series: títulos reais e relevantes ao tema.
-5. Nunca mencione automutilação, suicídio ou métodos de aposta.
+5. mencione automutilação, suicídio ou métodos de aposta.
 6. PRIORIDADE MÁXIMA: caber dentro de um limite curto de tokens. Prefira frases curtas a cortar campos.`;
 
   const userMsg = localMatch
