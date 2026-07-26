@@ -37,11 +37,10 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = (data && data.error && data.error.message) ? data.error.message : `http_${response.status}`;
-      res.status(response.status).json({ error: msg });
-      return;
-    }
-
+  console.error("Gemini Error:", JSON.stringify(data, null, 2));
+  res.status(response.status).json(data);
+  return;
+}
     const text = (data && data.candidates && data.candidates[0] && data.candidates[0].content
       && data.candidates[0].content.parts
       ? data.candidates[0].content.parts.map(p => p.text || "").join("")
