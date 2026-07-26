@@ -37,9 +37,8 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (response.status === 429) {
-    throw new Error(
-      "Muitas jornadas estão sendo criadas agora. Aguarde cerca de 20 segundos e tente novamente."
-    );
+    await new Promise(resolve => setTimeout(resolve, 21000));
+    return generateStory(rawText, localMatch);
 }
     const text = (data && data.candidates && data.candidates[0] && data.candidates[0].content
       && data.candidates[0].content.parts
