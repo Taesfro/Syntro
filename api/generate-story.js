@@ -28,7 +28,7 @@ export default async function handler(req, res) {
         contents: [{ role: "user", parts: [{ text: userMsg }] }],
         generationConfig: {
           responseMimeType: "application/json",
-          maxOutputTokens: 1200,
+          maxOutputTokens: 8192,
           temperature: 0.9
         }
       })
