@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      body: JSON.stringy({
         system_instruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: "user", parts: [{ text: userMsg }] }],
         generationConfig: {
@@ -36,9 +36,11 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (response.status === 429) {
-    await new Promise(resolve => setTimeout(resolve, 21000));
-    return generateStory(rawText, localMatch);
+if (response.status === 429) {
+  return res.status(429).json({
+    error: "quota_exceeded",
+    retryAfter: 20
+  });
 }
     const text = (data && data.candidates && data.candidates[0] && data.candidates[0].content
       && data.candidates[0].content.parts
