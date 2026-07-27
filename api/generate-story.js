@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringy({
+      body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: "user", parts: [{ text: userMsg }] }],
         generationConfig: {
