@@ -67,7 +67,16 @@ if (response.status === 429) {
     if (!text) {
       res.status(500).json({ error: "sem_conteudo_da_ia" });
       return;
+      storyCache.set(cacheKey, text);
     }
+  res.status(200).json({
+  content: [
+    {
+      type: "text",
+      text
+    }
+  ]
+});
 
     res.status(200).json({ content: [{ type: "text", text }] });
   } catch (err) {
