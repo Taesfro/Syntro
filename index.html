@@ -894,7 +894,7 @@ REGRAS:
 
     let data;
     try{ data = await response.json(); }
-    catch(e){ throw new Error("resposta_invalida"); }
+   async function generateStory(rawText, localMatch) {
 
     throw err {
       const msg = (data && data.error) ? data.error : `http_${response.status}`;
