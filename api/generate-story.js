@@ -35,6 +35,18 @@ export default async function handler(req, res) {
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.9
+          if (storyCache.has(cacheKey)) {
+  console.log("Resposta encontrada no cache.");
+
+  return res.status(200).json({
+    content: [
+      {
+        type: "text",
+        text: storyCache.get(cacheKey)
+      }
+    ]
+  });
+}
         }
       })
     });
