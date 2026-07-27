@@ -896,7 +896,7 @@ REGRAS:
     try{ data = await response.json(); }
    async function generateStory(rawText, localMatch) {
 
-    throw err {
+    if (!response.ok) {
       const msg = (data && data.error) ? data.error : `http_${response.status}`;
       throw new Error(msg);
     }
