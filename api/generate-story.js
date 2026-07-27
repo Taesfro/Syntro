@@ -6,6 +6,10 @@ export default async function handler(req, res) {
   }
 
   const { systemPrompt, userMsg } = req.body || {};
+  const cacheKey = JSON.stringify({
+  systemPrompt,
+  userMsg
+});
   if (!systemPrompt || !userMsg) {
     res.status(400).json({ error: "campos_obrigatorios_ausentes" });
     return;
