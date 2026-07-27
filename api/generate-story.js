@@ -1,4 +1,3 @@
-const storyCache = new Map();
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "method_not_allowed" });
@@ -6,10 +5,6 @@ export default async function handler(req, res) {
   }
 
   const { systemPrompt, userMsg } = req.body || {};
-  const cacheKey = JSON.stringify({
-  systemPrompt,
-  userMsg
-});
   if (!systemPrompt || !userMsg) {
     res.status(400).json({ error: "campos_obrigatorios_ausentes" });
     return;
@@ -35,18 +30,6 @@ export default async function handler(req, res) {
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.9
-          if (storyCache.has(cacheKey)) {
-  console.log("Resposta encontrada no cache.");
-
-  return res.status(200).json({
-    content: [
-      {
-        type: "text",
-        text: storyCache.get(cacheKey)
-      }
-    ]
-  });
-}
         }
       })
     });
@@ -67,16 +50,7 @@ if (response.status === 429) {
     if (!text) {
       res.status(500).json({ error: "sem_conteudo_da_ia" });
       return;
-      storyCache.set(cacheKey, text);
     }
-  res.status(200).json({
-  content: [
-    {
-      type: "text",
-      text
-    }
-  ]
-});
 
     res.status(200).json({ content: [{ type: "text", text }] });
   } catch (err) {
