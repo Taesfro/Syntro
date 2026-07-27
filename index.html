@@ -896,10 +896,14 @@ REGRAS:
     try{ data = await response.json(); }
     catch(e){ throw new Error("resposta_invalida"); }
 
-    if(!response.ok){
-      const msg = (data && data.error) ? data.error : `http_${response.status}`;
-      throw new Error(msg);
-    }
+    if (!response.ok) {
+  if (response.status === 429) {
+    throw new Error("A IA está temporariamente ocupada. Aguarde cerca de 20 segundos e tente novamente.");
+  }
+
+  const msg = (data && data.error) ? data.error : `http_${response.status}`;
+  throw new Error(msg);
+}
     if(data && data.error){
       throw new Error(data.error);
     }
